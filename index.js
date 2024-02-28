@@ -57,6 +57,16 @@ app.post('/api/users', async(req, res) => {
   }
 })
 
+app.get('/api/users', async(req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({data: users});
+  }catch(err) {
+    console.log(err);
+    res.status(500).json("Cannot get users");
+  }
+})
+
 
 
 
