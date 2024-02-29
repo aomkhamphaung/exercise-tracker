@@ -21,15 +21,12 @@ const mongoose = require('mongoose');
 	const userSchema = new mongoose.Schema({
 		username: {
 			type: String,
+			unique: true,
 			required: true,
 		},
 	});
 
 	const exerciseSchema = new mongoose.Schema({
-		username: {
-			type: String,
-			required: true,
-		},
 		description: {
 			type: String,
 			required: true,
@@ -41,6 +38,11 @@ const mongoose = require('mongoose');
 		date: {
 			type: Date,
 			default: Date.now,
+		},
+		userId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+			required: true,
 		},
 	});
 
@@ -56,8 +58,10 @@ const mongoose = require('mongoose');
 			const newUser = await User.create(req.body);
 			res.status(201).json({ data: newUser });
 		} catch (err) {
-			console.log(err);
-			res.status(500).json('Cannot create user');
+			console.error(err);
+			res.status(500).json({
+				error: err.message || 'Cannot create User',
+			});
 		}
 	});
 
@@ -66,8 +70,10 @@ const mongoose = require('mongoose');
 			const users = await User.find();
 			res.status(200).json({ data: users });
 		} catch (err) {
-			console.log(err);
-			res.status(500).json('Cannot get users');
+			console.error(err);
+			res.status(500).json({
+				error: err.message || 'Cannot get Users',
+			});
 		}
 	});
 
@@ -82,22 +88,39 @@ const mongoose = require('mongoose');
 				res.status(404).json('User not found!');
 			}
 
-			const exercise = new Exercise({
-				username: user.username,
+			const newExercise = new Exercise({
 				description,
 				duration,
-				date: date ? new Date(date) : new Date(),
+				date,
+				userId: user._id,
 			});
 
-			await exercise.save();
+			const exercise = await newExercise
+				.save()
+				.then((exercise) => exercise.populate('userId'));
+
 			res.status(201).json({ data: exercise });
 		} catch (err) {
-			console.log(err);
-			res.status(500).json('Cannot create Exercise');
+			console.error(err);
+
+			res.status(500).json({
+				error: err.message || 'Cannot create Exercise',
+			});
+		}
+	});
+
+	app.get('/api/users/:id/logs', async (req, res) => {
+		try {
+			res.status(200).json({ message: 'Hello World' });
+		} catch (err) {
+			console.error(err);
+			res.status(500).json({
+				error: err.message || 'Cannot get Logs',
+			});
 		}
 	});
 
 	app.listen(PORT, () => {
-		console.log(`Your app is listening on port http://[::1]:${PORT}`);
+		console.log(`Your app is running on port http://[::1]:${PORT}`);
 	});
 })();
