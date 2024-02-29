@@ -55,8 +55,8 @@ const mongoose = require('mongoose');
 
 	app.post('/api/users', async (req, res) => {
 		try {
-			const newUser = await User.create(req.body);
-			res.status(201).json({ data: newUser });
+			const data = await User.create(req.body);
+			res.status(201).json({ data });
 		} catch (err) {
 			console.error(err);
 			res.status(500).json({
@@ -67,8 +67,8 @@ const mongoose = require('mongoose');
 
 	app.get('/api/users', async (req, res) => {
 		try {
-			const users = await User.find();
-			res.status(200).json({ data: users });
+			const data = await User.find();
+			res.status(200).json({ data });
 		} catch (err) {
 			console.error(err);
 			res.status(500).json({
@@ -77,29 +77,37 @@ const mongoose = require('mongoose');
 		}
 	});
 
-	app.post('/api/users/:id/exercises', async (req, res) => {
+	app.post('/api/users/:userId/exercises', async (req, res) => {
 		try {
 			const { description, duration, date } = req.body;
-			const { id } = req.params;
+			const { userId } = req.params;
 
-			const user = await User.findById(id);
+			const user = await User.findById(userId);
 
 			if (!user) {
-				res.status(404).json('User not found!');
+				res.status(404).json({
+					error: 'User not found!',
+				});
 			}
 
 			const newExercise = new Exercise({
 				description,
 				duration,
 				date,
-				userId: user._id,
+				userId,
 			});
 
 			const exercise = await newExercise
 				.save()
 				.then((exercise) => exercise.populate('userId'));
 
-			res.status(201).json({ data: exercise });
+			res.status(201).json({
+				username: exercise.userId.username,
+				description: exercise.description,
+				duration: exercise.duration,
+				date: new Date(exercise.date).toDateString(),
+				_id: exercise._id,
+			});
 		} catch (err) {
 			console.error(err);
 
@@ -109,9 +117,30 @@ const mongoose = require('mongoose');
 		}
 	});
 
-	app.get('/api/users/:id/logs', async (req, res) => {
+	app.get('/api/users/:userId/logs', async (req, res) => {
 		try {
-			res.status(200).json({ message: 'Hello World' });
+			const { userId } = req.params;
+
+			const user = await User.findById(userId);
+
+			if (!user) {
+				res.status(404).json({
+					error: 'User not found!',
+				});
+			}
+
+			const exercises = (await Exercise.find({ userId })).map((exercise) => ({
+				description: exercise.description,
+				duration: exercise.duration,
+				date: new Date(exercise.date).toDateString(),
+			}));
+
+			res.status(200).json({
+				username: user.username,
+				count: exercises.length,
+				_id: user._id,
+				log: exercises,
+			});
 		} catch (err) {
 			console.error(err);
 			res.status(500).json({
