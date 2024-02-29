@@ -56,7 +56,7 @@ const mongoose = require('mongoose');
 	app.post('/api/users', async (req, res) => {
 		try {
 			const data = await User.create(req.body);
-			res.status(201).json({ data });
+			res.status(201).json(data);
 		} catch (err) {
 			console.error(err);
 			res.status(500).json({
@@ -68,7 +68,7 @@ const mongoose = require('mongoose');
 	app.get('/api/users', async (req, res) => {
 		try {
 			const data = await User.find();
-			res.status(200).json({ data });
+			res.status(200).json(data);
 		} catch (err) {
 			console.error(err);
 			res.status(500).json({
