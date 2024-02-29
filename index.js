@@ -67,6 +67,32 @@ app.get('/api/users', async(req, res) => {
   }
 })
 
+app.post('/api/users/:id/exercises', async (req, res) => {
+  try{
+    const {description, duration, date} = req.body;
+    const {id} = req.params;
+  
+    const user = await User.findById(id);
+  
+    if(!user) {
+      res.status(404).json("User not found!");
+    }
+  
+    const exercise = new Exercise({
+      username: user.username,
+      description,
+      duration,
+      date: date? new Date(date) : new Date() 
+    })
+  
+    await exercise.save();
+    res.status(201).json({data: exercise}); 
+  } catch(err) {
+    console.log(err);
+    res.status(500).json("Cannot create Exercise");
+  }
+})
+
 
 
 
