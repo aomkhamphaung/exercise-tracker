@@ -102,7 +102,7 @@ const mongoose = require('mongoose');
 				.then((exercise) => exercise.populate('userId'));
 
 			res.status(201).json({
-				username: exercise.userId.username,
+				username: exercise.userId,
 				description: exercise.description,
 				duration: exercise.duration,
 				date: new Date(exercise.date).toDateString(),
