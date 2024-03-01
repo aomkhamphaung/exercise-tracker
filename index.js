@@ -102,11 +102,11 @@ const mongoose = require('mongoose');
 				.then((exercise) => exercise.populate('user'));
 
 			res.status(201).json({
-				user: exercise.user,
+				username: user.username,
 				description: exercise.description,
 				duration: exercise.duration,
 				date: new Date(exercise.date).toDateString(),
-				_id: exercise._id,
+				_id: user._id,
 			});
 		} catch (err) {
 			console.error(err);
@@ -129,7 +129,7 @@ const mongoose = require('mongoose');
 				});
 			}
 
-			const exercises = (await Exercise.find({ userId })).map((exercise) => ({
+			const exercises = (await Exercise.find({ user })).map((exercise) => ({
 				description: exercise.description,
 				duration: exercise.duration,
 				date: new Date(exercise.date).toDateString(),
