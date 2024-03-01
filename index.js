@@ -97,15 +97,13 @@ const mongoose = require('mongoose');
 				user: user._id,
 			});
 
-			const exercise = await newExercise
-				.save()
-				.then((exercise) => exercise.populate('user'));
+			await newExercise.save();
 
 			res.status(201).json({
 				username: user.username,
-				description: exercise.description,
-				duration: exercise.duration,
-				date: new Date(exercise.date).toDateString(),
+				description: newExercise.description,
+				duration: newExercise.duration,
+				date: new Date(newExercise.date).toDateString(),
 				_id: user._id,
 			});
 		} catch (err) {
