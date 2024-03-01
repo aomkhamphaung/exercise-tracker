@@ -39,7 +39,7 @@ const mongoose = require('mongoose');
 			type: Date,
 			default: Date.now,
 		},
-		userId: {
+		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true,
@@ -94,15 +94,15 @@ const mongoose = require('mongoose');
 				description,
 				duration,
 				date,
-				userId,
+				user: user._id,
 			});
 
 			const exercise = await newExercise
 				.save()
-				.then((exercise) => exercise.populate('userId'));
+				.then((exercise) => exercise.populate('user'));
 
 			res.status(201).json({
-				username: exercise.userId,
+				user: exercise.user,
 				description: exercise.description,
 				duration: exercise.duration,
 				date: new Date(exercise.date).toDateString(),
