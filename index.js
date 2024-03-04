@@ -118,6 +118,7 @@ const mongoose = require('mongoose');
 	app.get('/api/users/:userId/logs', async (req, res) => {
 		try {
 			const { userId } = req.params;
+			const {from, to, limit} = req.query;
 
 			const user = await User.findById(userId);
 
@@ -127,17 +128,45 @@ const mongoose = require('mongoose');
 				});
 			}
 
-			const exercises = (await Exercise.find({ user })).map((exercise) => ({
-				description: exercise.description,
-				duration: exercise.duration,
-				date: new Date(exercise.date).toDateString(),
-			}));
+			let exercises = await Exercise.find({ user });
+
+			if(from) {
+				try {
+					const fromDate = new Date(from);
+					exercises = exercises.filter((exercise) => exercise.date >= fromDate);
+				} catch(err) {
+					console.log(err);
+					res.status(500).json({
+						error: err.message || 'Invalid date format'
+					})
+				}
+			}
+
+			if(to) {
+				try {
+					const toDate = new Date(to);
+					exercises = exercises.filter((exercise) => exercise.date <= toDate);
+				} catch(err) {
+					console.log(err);
+					res.status(500).json({
+						error: err.message || 'Invalid date format'
+					})
+				}
+			}
+
+			if(limit && limit > 0) {
+				exercises = exercises.slice(0, limit);
+			}
 
 			res.status(200).json({
 				username: user.username,
 				count: exercises.length,
 				_id: user._id,
-				log: exercises,
+				log: exercises.map((exercise) => ({
+					description: exercise.description,
+					duration: exercise.duration,
+					date: new Date(exercise.date).toDateString(),
+				})),
 			});
 		} catch (err) {
 			console.error(err);
